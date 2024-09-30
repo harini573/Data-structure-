@@ -1,0 +1,203 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+struct node {
+    int data;
+    struct node* next; // Pointer to the next node
+    struct node* prev; // Pointer to the previous node
+};
+
+struct node* head = NULL; // Initialize head to NULL
+
+struct node* getnode();
+void create();
+void display();
+void insert_begin();
+void insert_pos();
+void insert_end();
+void delete_begin();
+void delete_pos();
+void delete_end();
+
+int main() {
+    int choice;
+    while (1) {
+        printf("\nMenu");
+        printf("\n1. Create");
+        printf("\n2. Display");
+        printf("\n3. Insert at beginning");
+        printf("\n4. Insert at position");
+        printf("\n5. Insert at end");
+        printf("\n6. Delete from beginning");
+        printf("\n7. Delete from position");
+        printf("\n8. Delete from end");
+        printf("\n9. Exit");
+        printf("\nEnter choice: ");
+        scanf("%d", &choice);
+        
+        switch (choice) {
+            case 1: create(); break;
+            case 2: display(); break;
+            case 3: insert_begin(); break;
+            case 4: insert_pos(); break;
+            case 5: insert_end(); break;
+            case 6: delete_begin(); break;
+            case 7: delete_pos(); break;
+            case 8: delete_end(); break;
+            case 9: exit(0);
+            default: printf("\nWrong choice");
+        }
+    }
+    return 0;
+}
+
+struct node* getnode() {
+    struct node* newnode = (struct node*)malloc(sizeof(struct node)); // Allocate memory for new node
+    if (!newnode) {
+        printf("Memory allocation failed\n");
+        exit(1);
+    }
+    printf("Enter data: ");
+    scanf("%d", &newnode->data);
+    newnode->next = newnode; // Initialize next to point to itself
+    newnode->prev = newnode; // Initialize prev to point to itself
+    return newnode;
+}
+
+void create() {
+    struct node* newnode = getnode(); // Create a new node
+    head = newnode; // Set head to new node
+}
+
+void display() {
+    if (head == NULL) {
+        printf("List is empty\n");
+        return;
+    }
+    struct node* temp = head;
+    do {
+        printf("%d <-> ", temp->data);
+        temp = temp->next;
+    } while (temp != head);
+    printf("(back to head)\n");
+}
+
+void insert_begin() {
+    struct node* newnode = getnode();
+    if (head == NULL) {
+        head = newnode; // If the list is empty, set head
+    } else {
+        struct node* temp1 = head->prev; // Get the last node (tail)
+        newnode->next = head; // Link new node to head
+        newnode->prev = temp1; // Link new node to tail
+        temp1->next = newnode; // Link tail to new node
+        head->prev = newnode; // Link head back to new node
+        head = newnode; // Update head to new node
+    }
+}
+
+void insert_pos() {
+    struct node* newnode = getnode();
+    if (head == NULL) {
+        head = newnode; // If the list is empty, set head
+        return;
+    }
+
+    int pos;
+    printf("Enter position: ");
+    scanf("%d", &pos);
+    
+    if (pos == 0) {
+        insert_begin();
+        return;
+    }
+
+    struct node* temp = head;
+    for (int i = 0; i < pos && temp->next != head; i++) {
+        temp = temp->next; // Traverse to the specified position
+    }
+
+    newnode->next = temp; // Link new node to the current node
+    newnode->prev = temp->prev; // Link new node to the previous node
+    temp->prev->next = newnode; // Link previous node to new node
+    temp->prev = newnode; // Link current node back to new node
+}
+
+void insert_end() {
+    struct node* newnode = getnode();
+    if (head == NULL) {
+        head = newnode; // If the list is empty, set head
+    } else {
+        struct node* temp1 = head->prev; // Get the last node (tail)
+        temp1->next = newnode; // Link tail to new node
+        newnode->prev = temp1; // Link new node back to tail
+        newnode->next = head; // Link new node to head
+        head->prev = newnode; // Link head back to new node
+    }
+}
+
+void delete_begin() {
+    if (head == NULL) {
+        printf("List is empty\n");
+        return;
+    }
+
+    struct node* temp = head;
+    if (temp->next == head) { // Only one node
+        free(head);
+        head = NULL;
+    } else {
+        struct node* temp1 = head->prev; // Get the last node (tail)
+        head = head->next; // Move head to the next node
+        temp1->next = head; // Link tail to new head
+        head->prev = temp1; // Link new head back to tail
+        free(temp); // Free the old head
+    }
+}
+
+void delete_pos() {
+    if (head == NULL) {
+        printf("List is empty\n");
+        return;
+    }
+
+    int pos;
+    printf("Enter position: ");
+    scanf("%d", &pos);
+
+    if (pos == 0) {
+        delete_begin();
+        return;
+    }
+
+    struct node* temp = head;
+    for (int i = 0; i < pos && temp->next != head; i++) {
+        temp = temp->next; // Traverse to the specified position
+    }
+
+    if (temp == head) {
+        printf("Position out of bounds\n");
+        return;
+    }
+
+    temp->prev->next = temp->next; // Link previous node to next node
+    temp->next->prev = temp->prev; // Link next node back to previous node
+    free(temp); // Free memory
+}
+
+void delete_end() {
+    if (head == NULL) {
+        printf("List is empty\n");
+        return;
+    }
+
+    struct node* temp1 = head->prev; // Get the last node (tail)
+    if (temp1 == head) { // Only one node
+        free(head);
+        head = NULL;
+    } else {
+        temp1->prev->next = head; // Link second last node to head
+        head->prev = temp1->prev; // Link head back to second last node
+        free(temp1); // Free memory
+    }
+}
